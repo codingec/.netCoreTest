@@ -1,0 +1,221 @@
+{
+  "services": [
+    {
+      "id": 1,
+      "name": "Conference Room",
+      "description": "Large conference room with video conferencing capabilities, whiteboard, and seating for multiple people",
+      "capacity": 1,
+      "max_bookings_week": 5,
+      "created_at": "2024-01-15T09:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Isolation Room",
+      "description": "Private soundproof room for focused work, phone calls, and confidential meetings",
+      "capacity": 5,
+      "max_bookings_week": 20,
+      "created_at": "2024-01-15T09:05:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Parking Spot",
+      "description": "Covered parking space in the main building garage",
+      "capacity": 14,
+      "max_bookings_week": 3,
+      "created_at": "2024-01-15T09:10:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Desk Space",
+      "description": "Hot desk in open workspace area with monitor and chair",
+      "capacity": 40,
+      "max_bookings_week": 5,
+      "created_at": "2024-01-15T09:15:00Z"
+    }
+  ],
+  
+  "employees": [
+    {
+      "id": 101,
+      "first_name": "Sarah",
+      "last_name": "Johnson",
+      "email": "sarah.johnson@company.com",
+      "phone": "+1-555-0123",
+      "created_at": "2023-06-20T14:30:00Z"
+    },
+    {
+      "id": 102,
+      "first_name": "Michael",
+      "last_name": "Chen",
+      "email": "michael.chen@company.com",
+      "phone": "+1-555-0124",
+      "created_at": "2023-08-10T10:15:00Z"
+    },
+    {
+      "id": 103,
+      "first_name": "Emma",
+      "last_name": "Rodriguez",
+      "email": "emma.rodriguez@company.com",
+      "phone": "+1-555-0125",
+      "created_at": "2024-02-05T09:45:00Z"
+    }
+  ],
+  
+  "service_detail": [
+    {
+      "id": 1,
+      "service_id": 1,
+      "name": "Conference room A",
+      "description": "Main conference room",
+      "created_at": "2024-01-15T09:15:00Z"
+    },
+    {
+      "id": 2,
+      "service_id": 1,
+      "name": "Conference room B",
+      "description": "Secondary and smaller conference room",
+      "created_at": "2024-01-15T09:20:00Z"
+    },
+    {
+      "id": 3,
+      "service_id": 2,
+      "name": "Boot 1",
+      "description": "First booth",
+      "created_at": "2024-01-15T09:25:00Z"
+    },
+    {
+      "id": 4,
+      "service_id": 2,
+      "name": "Booth 2",
+      "description": "Booth 2",
+      "created_at": "2024-01-15T09:30:00Z"
+    },
+    {
+      "id": 5,
+      "service_id": 3,
+      "name": "Parking spot 13",
+      "description": "S1 next to the elevator",
+      "created_at": "2024-01-15T09:35:00Z"
+    },
+    {
+      "id": 6,
+      "service_id": 3,
+      "name": "Parking spot 14",
+      "description": "S1 next to the elevator",
+      "created_at": "2024-01-15T09:40:00Z"
+    },
+    {
+      "id": 7,
+      "service_id": 4,
+      "name": "Desk space 1",
+      "description": "First row, first desk",
+      "created_at": "2024-01-15T09:45:00Z"
+    },
+    {
+      "id": 8,
+      "service_id": 4,
+      "name": "Desk space 2",
+      "description": "First row, second desk",
+      "created_at": "2024-01-15T09:50:00Z"
+    }
+  ],
+  
+  "bookings": [
+    {
+      "id": 501,
+      "service_detail_id": 1,
+      "employee_id": 101,
+      "start_datetime": "2024-10-18T10:00:00Z",
+      "end_datetime": "2024-10-18T10:45:00Z",
+      "created_at": "2024-10-15T16:45:00Z"
+    },
+    {
+      "id": 502,
+      "service_detail_id": 2,
+      "employee_id": 102,
+      "start_datetime": "2024-10-19T09:00:00Z",
+      "end_datetime": "2024-10-19T10:00:00Z",
+      "created_at": "2024-10-16T08:30:00Z"
+    },
+    {
+      "id": 503,
+      "service_detail_id": 3,
+      "employee_id": 103,
+      "start_datetime": "2024-10-18T14:00:00Z",
+      "end_datetime": "2024-10-18T14:30:00Z",
+      "created_at": "2024-10-17T11:20:00Z"
+    },
+    {
+      "id": 504,
+      "service_detail_id": 4,
+      "employee_id": 101,
+      "start_datetime": "2024-10-20T13:00:00Z",
+      "end_datetime": "2024-10-20T13:45:00Z",
+      "created_at": "2024-10-17T14:15:00Z"
+    },
+    {
+      "id": 505,
+      "service_detail_id": 5,
+      "employee_id": 102,
+      "start_datetime": "2024-10-21T08:00:00Z",
+      "end_datetime": "2024-10-21T08:30:00Z",
+      "created_at": "2024-10-18T09:00:00Z"
+    },
+    {
+      "id": 506,
+      "service_detail_id": 6,
+      "employee_id": 103,
+      "start_datetime": "2024-10-21T09:15:00Z",
+      "end_datetime": "2024-10-21T10:00:00Z",
+      "created_at": "2024-10-14T15:30:00Z"
+    },
+    {
+      "id": 507,
+      "service_detail_id": 7,
+      "employee_id": 101,
+      "start_datetime": "2024-10-22T09:00:00Z",
+      "end_datetime": "2024-10-22T09:15:00Z",
+      "created_at": "2024-10-19T10:45:00Z"
+    },
+    {
+      "id": 508,
+      "service_detail_id": 8,
+      "employee_id": 102,
+      "start_datetime": "2024-10-23T08:30:00Z",
+      "end_datetime": "2024-10-23T09:30:00Z",
+      "created_at": "2024-10-20T12:00:00Z"
+    },
+    {
+      "id": 509,
+      "service_detail_id": 1,
+      "employee_id": 103,
+      "start_datetime": "2024-10-24T14:00:00Z",
+      "end_datetime": "2024-10-24T14:45:00Z",
+      "created_at": "2024-10-21T09:30:00Z"
+    },
+    {
+      "id": 510,
+      "service_detail_id": 3,
+      "employee_id": 102,
+      "start_datetime": "2024-10-25T10:00:00Z",
+      "end_datetime": "2024-10-25T10:30:00Z",
+      "created_at": "2024-10-22T16:20:00Z"
+    },
+    {
+      "id": 511,
+      "service_detail_id": 8,
+      "employee_id": 101,
+      "start_datetime": "2024-10-25T09:00:00Z",
+      "end_datetime": "2024-10-25T10:00:00Z",
+      "created_at": "2024-10-23T08:15:00Z"
+    },
+    {
+      "id": 512,
+      "service_detail_id": 5,
+      "employee_id": 103,
+      "start_datetime": "2024-10-26T08:00:00Z",
+      "end_datetime": "2024-10-26T08:45:00Z",
+      "created_at": "2024-10-24T13:40:00Z"
+    }
+  ]
+}

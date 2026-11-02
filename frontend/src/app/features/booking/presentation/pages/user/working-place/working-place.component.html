@@ -1,0 +1,13 @@
+<div class="working-place-main">
+  <h2>Available working spaces</h2>
+  <p>Choose one</p>
+  <div class="working-place-cards">
+    @if (
+    workingPlaces | async; as wkPlaces
+    ) {
+    @for (wkPlace of wkPlaces; track wkPlace.id) {
+    <app-working-place-card [workingPlace]="wkPlace" (onSelect)="this.onSelectCard($event)"></app-working-place-card>
+    }
+    }
+  </div>
+</div>

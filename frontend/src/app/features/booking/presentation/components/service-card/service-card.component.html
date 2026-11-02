@@ -1,0 +1,24 @@
+<div class="service-card" (click)="this.onSelected.emit(this.service().id)">
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>
+        {{this.service().name}}
+      </mat-card-title>
+    </mat-card-header>
+    <img [src]="this.service().imageUrl" />
+    <mat-card-content>
+      {{this.service().description}}
+      <mat-list>
+        <div>
+          @for (item of this.characteristics(); track $index) {
+          <mat-list-item>
+            <div matListItemTitle> {{item.name}}</div>
+            <div matListItemTitle>{{item.value}}</div>
+          </mat-list-item>
+          }
+        </div>
+      </mat-list>
+
+    </mat-card-content>
+  </mat-card>
+</div>

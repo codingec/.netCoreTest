@@ -1,0 +1,33 @@
+.login-main-container {
+  height: 100%;
+  width: 100%;
+
+  img {
+    width: 30%;
+    min-width: 200px;
+  }
+}
+
+.login-form-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.login-inputs-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}

@@ -1,0 +1,12 @@
+<div class="service-main">
+  <h2>Available services</h2>
+  <p>Choose one</p>
+  <div class="services-container">
+    @for (item of (this.services$ | async); track item.id) {
+    <app-service-card
+      [service]="item"
+      (onSelected)="this.onSelectCard($event)"
+    ></app-service-card>
+    }
+  </div>
+</div>

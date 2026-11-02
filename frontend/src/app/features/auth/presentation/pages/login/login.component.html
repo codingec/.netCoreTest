@@ -1,0 +1,42 @@
+<div class="login-main-container">
+  <div class="login-form-container">
+    <form [formGroup]="loginForm">
+      <div class="login-inputs-container">
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            placeholder="Enter your username"
+            [errorStateMatcher]="matcher"
+          />
+          @if (loginForm.get("username")?.hasError("required")) {
+            <mat-error>Username is required</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            type="password"
+            placeholder="Enter your password"
+            [errorStateMatcher]="matcher"
+          />
+
+          @if (loginForm.get("password")?.hasError("required")) {
+            <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="onSubmit()"
+        [disabled]="loginForm.invalid"
+      >
+        Login
+      </button>
+    </form>
+  </div>
+</div>

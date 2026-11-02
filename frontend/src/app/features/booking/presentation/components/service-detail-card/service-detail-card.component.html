@@ -1,0 +1,24 @@
+<div class="service-detail-card" >
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>
+        {{this.serviceDetail().name}}
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      {{this.serviceDetail().description}}
+      <mat-list>
+        <div>
+          @for (item of this.characteristics(); track $index) {
+          <mat-list-item>
+            <div matListItemTitle> {{item.name}}</div>
+            <div matListItemTitle>{{item.value}}</div>
+          </mat-list-item>
+          }
+        </div>
+      </mat-list>
+
+    </mat-card-content>
+  </mat-card>
+
+</div>

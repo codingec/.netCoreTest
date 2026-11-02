@@ -1,0 +1,64 @@
+<h2 mat-dialog-title class="modal-title">Booking Details</h2>
+<span class="modal-subtitle">{{ data.name }}</span>
+<form class="modal-form" [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field appearance="outline">
+    <mat-label>Start Date</mat-label>
+    <input
+      matInput
+      [matDatepicker]="picker"
+      formControlName="startDate"
+      [min]="minDate"
+      [max]="maxDate"
+      [matDatepickerFilter]="dateFilter"
+    />
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+    <mat-error *ngIf="form.controls['startDate'].hasError('required')">
+      Required
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Start Time</mat-label>
+    <input matInput type="time" formControlName="startTime" />
+    <mat-error *ngIf="form.controls['startTime'].hasError('required')">
+      Required
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Duration (minutes)</mat-label>
+    <mat-select formControlName="duration">
+      <mat-option [value]="15">15 minutes</mat-option>
+      <mat-option [value]="30">30 minutes</mat-option>
+      <mat-option [value]="45">45 minutes</mat-option>
+      <mat-option [value]="60">60 minutes</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="end-info" *ngIf="form.get('endDate')?.value">
+    <strong>End Datetime:</strong>
+    {{ form.get("endDate")?.value | date : "dd-MM-yyyy hh:mm a" }}
+  </div>
+
+  <div class="modal-actions">
+    <button
+      mat-stroked-button
+      type="button"
+      (click)="close()"
+      [disabled]="loading"
+    >
+      Close
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid || loading"
+    >
+      <mat-progress-spinner *ngIf="loading" diameter="18" mode="indeterminate">
+      </mat-progress-spinner>
+      <span *ngIf="!loading">Save</span>
+    </button>
+  </div>
+</form>
