@@ -1,19 +1,16 @@
-import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { ResponseModel } from '../../../auth/domain/models/response.model';
 import Booking from '../../domain/models/booking.model';
 import { BookingRepository } from '../../domain/repositories/booking.repository';
-import { OfficeRepositoryMapper } from '../mappers/office.repository.mapper';
 import { BookingRow } from '../../domain/models/booking-row.model';
 
 @Injectable({ providedIn: 'root' })
 export class BookingImplRepository extends BookingRepository {
   http: HttpClient = inject(HttpClient);
-  mapper = new OfficeRepositoryMapper();
-
-  baseUrl: string = 'http://localhost:5170/api';
-  relativeUrl: string = '/Office';
+  baseUrl: string = environment.apiUrl;
 
   override saveBooking(booking: Booking): Observable<Booking> {
     const payload = {
@@ -23,7 +20,8 @@ export class BookingImplRepository extends BookingRepository {
     };
     return this.http
       .post<ResponseModel>(`${this.baseUrl}/Booking`, payload)
-      .pipe(map((response: ResponseModel) => response.data as Booking));
+      // The API answers 201 with { data: { id } } only.
+      .pipe(map((response: ResponseModel) => ({ ...booking, id: response.data?.id })));
   }
 
   override getBookings(): Observable<Booking[]> {
@@ -34,8 +32,13 @@ export class BookingImplRepository extends BookingRepository {
 
   override getBooking(id: number): Observable<Booking | null> {
     return this.http
-      .get<ResponseModel>(`${this.baseUrl}/Booking?id=${id}`)
-      .pipe(map((response: ResponseModel) => response.data as Booking | null));
+      .get<ResponseModel>(`${this.baseUrl}/Booking/${id}`)
+      .pipe(
+        map((response: ResponseModel) => response.data as Booking),
+        catchError((err: HttpErrorResponse) =>
+          err.status === 404 ? of(null) : throwError(() => err)
+        )
+      );
   }
 
   override getBookingsByService(serviceId: number): Observable<BookingRow[]> {
@@ -43,7 +46,13 @@ export class BookingImplRepository extends BookingRepository {
       .get<ResponseModel>(
         `${this.baseUrl}/Booking/Service?serviceId=${serviceId}`
       )
-      .pipe(map((response: ResponseModel) => response.data as BookingRow[]));
+      .pipe(
+        map((response: ResponseModel) => response.data as BookingRow[]),
+        // The API answers 404 "Bookings not found" when a service has no bookings yet.
+        catchError((err: HttpErrorResponse) =>
+          err.status === 404 ? of([]) : throwError(() => err)
+        )
+      );
   }
 
   private toLocalIsoNoZ(d: Date): string {

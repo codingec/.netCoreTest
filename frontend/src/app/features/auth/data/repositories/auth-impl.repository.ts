@@ -1,3 +1,4 @@
+import { environment } from '../../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -14,7 +15,7 @@ export class AuthImplRepository extends AuthRepository {
   private http = inject(HttpClient);
   private authStore = inject(AuthStore);
 
-  private baseUrl = 'http://localhost:5170/api';
+  private baseUrl = environment.apiUrl;
   private relativeUrl = '/Auth/login';
 
   override login(params: {

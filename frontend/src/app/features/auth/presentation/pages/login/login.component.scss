@@ -1,33 +1,51 @@
-.login-main-container {
-  height: 100%;
-  width: 100%;
-
-  img {
-    width: 30%;
-    min-width: 200px;
-  }
-}
-
-.login-form-container {
-  height: 100%;
+.login-page {
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  box-sizing: border-box;
+  background: var(--mat-sys-surface-container-low);
+}
 
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    justify-content: center;
-    align-items: center;
+.login-card {
+  width: min(100%, 400px);
+  padding: var(--space-6) var(--space-5);
+  box-sizing: border-box;
+  border-radius: var(--mat-sys-corner-large);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--space-5);
+
+  mat-icon {
+    color: var(--mat-sys-primary);
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  h1 {
+    font: var(--mat-sys-headline-small);
+    color: var(--mat-sys-on-surface);
+    margin: var(--space-2) 0;
+  }
+
+  p {
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
   }
 }
 
-.login-inputs-container {
-  margin-top: 20px;
-  width: 100%;
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--space-2);
+
+  mat-form-field,
+  button {
+    width: 100%;
+  }
 }

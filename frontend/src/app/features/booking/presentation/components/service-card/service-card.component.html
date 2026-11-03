@@ -1,24 +1,33 @@
-<div class="service-card" (click)="this.onSelected.emit(this.service().id)">
+<div
+  class="service-card clickable-card"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="service().name"
+  (click)="onSelected.emit(service().id)"
+  (keydown.enter)="$event.preventDefault(); onSelected.emit(service().id)"
+  (keydown.space)="$event.preventDefault(); onSelected.emit(service().id)"
+>
   <mat-card appearance="outlined">
+    <img
+      #media
+      class="card-media"
+      [src]="service().imageUrl"
+      [alt]="service().name"
+      (error)="media.classList.add('is-broken')"
+    />
     <mat-card-header>
-      <mat-card-title>
-        {{this.service().name}}
-      </mat-card-title>
+      <mat-card-title class="card-text">{{ service().name }}</mat-card-title>
     </mat-card-header>
-    <img [src]="this.service().imageUrl" />
     <mat-card-content>
-      {{this.service().description}}
+      <p class="description card-text">{{ service().description }}</p>
       <mat-list>
-        <div>
-          @for (item of this.characteristics(); track $index) {
+        @for (item of characteristics(); track $index) {
           <mat-list-item>
-            <div matListItemTitle> {{item.name}}</div>
-            <div matListItemTitle>{{item.value}}</div>
+            <span matListItemTitle class="characteristic-value card-text">{{ item.value }}</span>
+            <span matListItemLine class="characteristic-name">{{ item.name }}</span>
           </mat-list-item>
-          }
-        </div>
+        }
       </mat-list>
-
     </mat-card-content>
   </mat-card>
 </div>

@@ -107,8 +107,6 @@ public class AuthService : IAuthService
         user.Roles.Add(new UserRole { User = user, Role = role });
         _db.Users.Add(user);
 
-        // SaveChangesAsync returns the number of affected rows, not the id.
-        // After saving, EF Core fills user.Id with the generated primary key.
         await _db.SaveChangesAsync(ct);
 
         var roles = new[] { role.Name ?? "User" };
@@ -136,8 +134,6 @@ public class AuthService : IAuthService
             };
             _db.Employees.Add(employee);
             await _db.SaveChangesAsync(ct);
-
-            // EF Core sets employee.Id to the generated primary key after saving.
             employeeId = employee.Id;
         }
 

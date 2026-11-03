@@ -7,7 +7,9 @@ Thumbs.db
 ehthumbs.db
 Icon?
 desktop.ini
-
+.claude/*
+specs/*
+.specify/*
 # Logs
 *.log
 npm-debug.log*
@@ -123,3 +125,12 @@ tools/
 
 # DB
 backend/src/booking.api/app.db
+##############################
+# Kubernetes / secrets
+##############################
+.kube/
+kubeconfig*
+*.key
+*.crt
+*.secret.yaml
+secrets/

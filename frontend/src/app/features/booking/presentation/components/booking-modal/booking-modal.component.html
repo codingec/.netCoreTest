@@ -51,12 +51,16 @@
       Close
     </button>
     <button
-      mat-raised-button
-      color="primary"
+      mat-flat-button
       type="submit"
       [disabled]="form.invalid || loading"
     >
-      <mat-progress-spinner *ngIf="loading" diameter="18" mode="indeterminate">
+      <mat-progress-spinner
+        *ngIf="loading"
+        class="btn-spinner"
+        diameter="18"
+        mode="indeterminate"
+      >
       </mat-progress-spinner>
       <span *ngIf="!loading">Save</span>
     </button>

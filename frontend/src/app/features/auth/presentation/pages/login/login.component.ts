@@ -3,6 +3,8 @@ import { Component, inject, signal } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { LoginUseCase } from '../../../domain/use-cases/login.usecase';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
@@ -32,7 +34,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 
 @Component({
   selector: 'app-login',
-  imports: [MatInputModule, ReactiveFormsModule, MatButtonModule],
+  imports: [MatInputModule, ReactiveFormsModule, MatButtonModule, MatCardModule, MatIconModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

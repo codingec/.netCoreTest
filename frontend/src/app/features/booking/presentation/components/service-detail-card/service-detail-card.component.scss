@@ -1,4 +1,17 @@
-.service-detail-card{
-  width: 300px;
-  margin: 10px;
+mat-card-header {
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+.description {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: var(--space-2) 0;
+}
+
+.characteristic-name {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.characteristic-value {
+  color: var(--mat-sys-on-surface);
 }

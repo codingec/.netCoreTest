@@ -31,12 +31,21 @@ export class AuthStore {
     localStorage.setItem('auth', JSON.stringify(authData));
   }
 
+  /** Restores the session saved by setSession, e.g. after a page reload. */
   loadSession() {
-    const storedAuth = localStorage.getItem('auth');
-    if (storedAuth) {
-      const authData: AuthModel = JSON.parse(storedAuth);
-      this.setSession(authData);
+    try {
+      const storedAuth = localStorage.getItem('auth');
+      if (storedAuth) {
+        const authData: AuthModel = JSON.parse(storedAuth);
+        this.setSession(authData);
+      }
+    } catch {
+      this.clearSession();
     }
+  }
+
+  getToken(): string | null {
+    return this._authData.value?.data?.token ?? null;
   }
 
   clearSession() {

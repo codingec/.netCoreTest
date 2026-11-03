@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   inject,
   OnDestroy,
   OnInit,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +20,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   catchError,
-  delay,
   EMPTY,
   filter,
   finalize,
@@ -75,9 +76,16 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
   ];
   dataSource = new MatTableDataSource<BookingRow>([]);
 
-  ngOnInit(): void {
-    this.loadBookings();
+  constructor() {
+    // The selected service is set asynchronously (after offices and services load),
+    // so load the bookings whenever it changes instead of only once in ngOnInit.
+    effect(() => {
+      this.service();
+      untracked(() => this.loadBookings());
+    });
   }
+
+  ngOnInit(): void {}
 
   loadBookings() {
     const serviceModel = this.bookingStore.selectedServiceId;
@@ -113,7 +121,9 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
 
   openModal(detail: any) {
     const dialogRef = this.dialog.open(BookingModal, {
-      width: '400px',
+      width: '480px',
+      maxWidth: '95vw',
+      autoFocus: 'first-tabbable',
       data: detail,
     });
 
@@ -122,7 +132,6 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     modal.saveRequested$
       .pipe(
         tap(() => modal.setLoading(true)),
-        delay(5000),
         switchMap((dto) =>
           this.saveBookingUseCase.execute(dto).pipe(
             tap((saved) => dialogRef.close(saved)),
@@ -139,10 +148,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     dialogRef
       .afterClosed()
       .pipe(filter(Boolean))
-      .subscribe((saved) => {
+      .subscribe(() => {
         this._snackbar.open('Booking saved successfully!', '', {
           duration: 3000,
         });
+        this.loadBookings();
       });
   }
 

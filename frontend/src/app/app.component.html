@@ -1,3 +1,17 @@
-<div style="padding: 10px 30px;">
+@if (showToolbar()) {
+  <mat-toolbar class="app-toolbar">
+    @if (showBack()) {
+      <button mat-icon-button aria-label="Go back" (click)="back()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    }
+    <a class="brand" routerLink="/booking/working-place">
+      <mat-icon aria-hidden="true">event_seat</mat-icon>
+      <span>Booking</span>
+    </a>
+  </mat-toolbar>
+}
+
+<main [class.page]="showToolbar()">
   <router-outlet />
-</div>
+</main>

@@ -1,0 +1,33 @@
+// Shared design tokens: spacing, layout width, breakpoints and media-query mixins.
+// Colors, shape and elevation come from Angular Material system tokens (--mat-sys-*).
+
+$bp-tablet: 600px;
+$bp-desktop: 960px;
+
+@mixin tablet-up {
+  @media (min-width: $bp-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $bp-desktop) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin root-tokens {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --content-max-width: 1200px;
+}

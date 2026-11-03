@@ -1,0 +1,19 @@
+// Brand theme: blue primary, cyan accent. `theme-type: color-scheme` emits light-dark()
+// values, so the app follows the OS light/dark preference with no script.
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$blue-palette,
+        tertiary: mat.$cyan-palette,
+        theme-type: color-scheme,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}

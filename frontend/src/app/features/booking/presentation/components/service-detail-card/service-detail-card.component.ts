@@ -1,4 +1,4 @@
-import { Component, input, linkedSignal } from '@angular/core';
+import { Component, input, linkedSignal, output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import ServiceDetailModel from '../../../domain/models/service-detail.model';
@@ -10,7 +10,8 @@ import ServiceDetailModel from '../../../domain/models/service-detail.model';
   styleUrl: './service-detail-card.component.scss'
 })
 export class ServiceDetailCardComponent {
-  serviceDetail= input.required<ServiceDetailModel>();
+  serviceDetail = input.required<ServiceDetailModel>();
+  selected = output<ServiceDetailModel>();
   characteristics = linkedSignal(() => {
     return [
       {

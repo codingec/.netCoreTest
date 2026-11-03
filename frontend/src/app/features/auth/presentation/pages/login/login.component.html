@@ -1,42 +1,44 @@
-<div class="login-main-container">
-  <div class="login-form-container">
-    <form [formGroup]="loginForm">
-      <div class="login-inputs-container">
-        <mat-form-field>
-          <mat-label>Username</mat-label>
-          <input
-            matInput
-            formControlName="username"
-            placeholder="Enter your username"
-            [errorStateMatcher]="matcher"
-          />
-          @if (loginForm.get("username")?.hasError("required")) {
-            <mat-error>Username is required</mat-error>
-          }
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Password</mat-label>
-          <input
-            matInput
-            formControlName="password"
-            type="password"
-            placeholder="Enter your password"
-            [errorStateMatcher]="matcher"
-          />
+<div class="login-page">
+  <mat-card appearance="outlined" class="login-card">
+    <div class="login-header">
+      <mat-icon aria-hidden="true">event_seat</mat-icon>
+      <h1>Booking</h1>
+      <p>Sign in to reserve a desk, room or parking spot.</p>
+    </div>
 
-          @if (loginForm.get("password")?.hasError("required")) {
-            <mat-error>Password is required</mat-error>
-          }
-        </mat-form-field>
-      </div>
-      <button
-        mat-flat-button
-        color="primary"
-        (click)="onSubmit()"
-        [disabled]="loginForm.invalid"
-      >
-        Login
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input
+          matInput
+          formControlName="username"
+          placeholder="Enter your username"
+          autocomplete="username"
+          [errorStateMatcher]="matcher"
+        />
+        @if (loginForm.get("username")?.hasError("required")) {
+          <mat-error>Username is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          formControlName="password"
+          type="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          [errorStateMatcher]="matcher"
+        />
+        @if (loginForm.get("password")?.hasError("required")) {
+          <mat-error>Password is required</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" [disabled]="loginForm.invalid">
+        Log in
       </button>
     </form>
-  </div>
+  </mat-card>
 </div>

@@ -27,3 +27,12 @@ Refer to each project's README for setup instructions, prerequisites, and availa
 
 - [Backend README](backend/README.md)
 - [Frontend README](frontend/README.md)
+
+## Deployment
+
+Each part has its own Docker and Kubernetes files under `deploy/`:
+
+- [Backend deployment](backend/deploy/README.md) — API image, ConfigMap, Secret, Deployment, Service, Ingress (`/api`), HPA
+- [Frontend deployment](frontend/deploy/README.md) — web image (nginx), ConfigMap, Deployment, Service, Ingress (`/`), HPA
+
+Both are served on one host (`booking.local`): `/api` goes to the backend, everything else to the frontend.

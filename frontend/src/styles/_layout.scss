@@ -1,0 +1,110 @@
+// Global layout classes shared by pages and components.
+// See specs/002-frontend-styling/contracts/ui-contract.md.
+@use 'tokens' as t;
+
+.page {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  box-sizing: border-box;
+
+  @include t.tablet-up {
+    padding-inline: var(--space-5);
+  }
+
+  @include t.desktop-up {
+    padding-inline: var(--space-6);
+  }
+}
+
+.page-header {
+  margin: 0 0 var(--space-5);
+
+  h1 {
+    font: var(--mat-sys-headline-small);
+    color: var(--mat-sys-on-surface);
+    margin: 0 0 var(--space-1);
+  }
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+    margin: 0;
+  }
+}
+
+.card-grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+}
+
+.clickable-card {
+  display: block;
+  height: 100%;
+  cursor: pointer;
+  border-radius: var(--mat-sys-corner-medium);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--mat-sys-level3);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+
+  mat-card {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  @include t.reduced-motion {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+.card-media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--mat-sys-surface-container);
+
+  &.is-broken {
+    visibility: hidden;
+  }
+}
+
+.card-text {
+  overflow-wrap: anywhere;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--mat-sys-corner-medium);
+
+  table {
+    width: 100%;
+    min-width: 600px;
+  }
+}
+
+.section {
+  margin-top: var(--space-6);
+
+  > h2 {
+    font: var(--mat-sys-title-large);
+    color: var(--mat-sys-on-surface);
+    margin: 0 0 var(--space-4);
+  }
+}

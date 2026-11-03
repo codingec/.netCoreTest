@@ -25,4 +25,35 @@ describe('ServiceCardComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('keyboard and click activation', () => {
+    let card: HTMLElement;
+    let emitted: unknown[];
+
+    beforeEach(() => {
+      emitted = [];
+      component.onSelected.subscribe((v: unknown) => emitted.push(v));
+      card = fixture.nativeElement.querySelector('.clickable-card');
+    });
+
+    it('is focusable and exposed as a button', () => {
+      expect(card.getAttribute('tabindex')).toBe('0');
+      expect(card.getAttribute('role')).toBe('button');
+    });
+
+    it('emits on click', () => {
+      card.click();
+      expect(emitted).toEqual([1]);
+    });
+
+    it('emits on Enter', () => {
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(emitted).toEqual([1]);
+    });
+
+    it('emits on Space', () => {
+      card.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+      expect(emitted).toEqual([1]);
+    });
+  });
 });

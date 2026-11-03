@@ -29,4 +29,25 @@ describe('LoginComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('shows a branded card', () => {
+    const card: HTMLElement | null = fixture.nativeElement.querySelector('mat-card');
+    expect(card).not.toBeNull();
+    expect(card!.textContent).toContain('Booking');
+  });
+
+  it('uses a submit button that is disabled while the form is invalid', () => {
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+    expect(button.getAttribute('type')).toBe('submit');
+    expect(button.disabled).toBeTrue();
+  });
+
+  it('submits once when the form is submitted (Enter key)', () => {
+    const submitSpy = spyOn(component, 'onSubmit');
+    component.loginForm.setValue({ username: 'user', password: 'secret' });
+    fixture.detectChanges();
+    const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
+    form.dispatchEvent(new Event('submit'));
+    expect(submitSpy).toHaveBeenCalledTimes(1);
+  });
 });

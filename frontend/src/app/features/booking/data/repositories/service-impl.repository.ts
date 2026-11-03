@@ -1,3 +1,4 @@
+import { environment } from '../../../../../environments/environment';
 import { inject, Injectable } from '@angular/core';
 import { ServiceRepository } from '../../domain/repositories/service.repository';
 import { map, Observable } from 'rxjs';
@@ -16,7 +17,7 @@ export class ServiceImplRepository extends ServiceRepository {
   http: HttpClient = inject(HttpClient);
   mapper = new ServiceRepositoryMapper();
 
-  baseUrl: string = 'http://localhost:5170/api';
+  baseUrl: string = environment.apiUrl;
   relativeUrl: string = '/Services';
 
   override getServices(officeId: number): Observable<ServiceModel[]> {
@@ -25,10 +26,11 @@ export class ServiceImplRepository extends ServiceRepository {
         this.baseUrl + this.relativeUrl + `?officeId=${officeId}`
       )
       .pipe(
+        // The API ignores ?officeId and returns every service, so filter here too.
         map((response: ResponseModel) =>
-          response.data.map((entity: ServiceEntity) =>
-            this.mapper.mapFrom(entity)
-          )
+          (response.data as ServiceEntity[])
+            .filter((entity) => entity.officeId === officeId)
+            .map((entity) => this.mapper.mapFrom(entity))
         )
       );
   }

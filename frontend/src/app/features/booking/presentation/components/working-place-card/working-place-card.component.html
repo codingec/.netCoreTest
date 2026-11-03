@@ -1,8 +1,22 @@
-<div class="working-place-card" (click)="this.onSelect.emit(this.workingPlace().id)">
+<div
+  class="working-place-card clickable-card"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="workingPlace().name"
+  (click)="onSelect.emit(workingPlace().id)"
+  (keydown.enter)="$event.preventDefault(); onSelect.emit(workingPlace().id)"
+  (keydown.space)="$event.preventDefault(); onSelect.emit(workingPlace().id)"
+>
   <mat-card appearance="outlined">
+    <img
+      #media
+      class="card-media"
+      [src]="workingPlace().imageUrl"
+      [alt]="workingPlace().name"
+      (error)="media.classList.add('is-broken')"
+    />
     <mat-card-header>
-      <mat-card-title> {{this.workingPlace().name}}</mat-card-title>
+      <mat-card-title class="card-text">{{ workingPlace().name }}</mat-card-title>
     </mat-card-header>
-    <img [src]="this.workingPlace().imageUrl" />
   </mat-card>
 </div>

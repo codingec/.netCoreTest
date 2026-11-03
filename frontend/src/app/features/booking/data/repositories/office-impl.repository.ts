@@ -1,3 +1,4 @@
+import { environment } from '../../../../../environments/environment';
 import { inject, Injectable } from '@angular/core';
 import { OfficeRepository } from '../../domain/repositories/office.repository';
 import { map, Observable, tap } from 'rxjs';
@@ -13,7 +14,7 @@ export class OfficeImplRepository extends OfficeRepository {
   http: HttpClient = inject(HttpClient);
   mapper = new OfficeRepositoryMapper();
 
-  baseUrl: string = 'http://localhost:5170/api';
+  baseUrl: string = environment.apiUrl;
   relativeUrl: string = '/Office';
 
   override getOficces(): Observable<Office[]> {
