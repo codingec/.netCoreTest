@@ -149,6 +149,40 @@ public class AuthServiceTests : DatabaseTest
     }
 
     [Fact]
+    public async Task Register_creates_employee_and_returns_its_id()
+    {
+        var sut = CreateSut(out var db);
+        await using var _ = db;
+
+        var (ok, data, _, message) = await sut.RegisterAsync("emp.new@demo.com", "Passw0rd", "emp.new", default);
+
+        Assert.True(ok, message);
+        Assert.NotNull(data!.employeeId);
+
+        await using var check = Database.CreateContext();
+        var employee = await check.Employees.SingleAsync(e => e.UserId == data.UserId);
+        Assert.Equal(employee.Id, data.employeeId);
+        Assert.Equal("emp.new@demo.com", employee.Email);
+        Assert.Equal("emp.new", employee.FirstName);
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(data.Token);
+        Assert.Contains(jwt.Claims, c => c.Type == "employee_id" && c.Value == employee.Id.ToString());
+    }
+
+    [Fact]
+    public async Task Registered_user_login_returns_the_same_employee_id()
+    {
+        var sut = CreateSut(out var db);
+        await using var _ = db;
+        var (_, registered, _, _) = await sut.RegisterAsync("emp.login@demo.com", "Passw0rd", null, default);
+
+        await using var db2 = Database.CreateContext();
+        var (_, loggedIn, _) = await new AuthService(db2, Config()).LoginAsync("emp.login@demo.com", "Passw0rd", default);
+
+        Assert.Equal(registered!.employeeId, loggedIn!.employeeId);
+    }
+
+    [Fact]
     public async Task Registered_user_can_log_in()
     {
         var sut = CreateSut(out var db);

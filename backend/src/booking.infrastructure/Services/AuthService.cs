@@ -73,8 +73,7 @@ public class AuthService : IAuthService
         return (true, resp, Codes.Ok);
     }
 
-    public async Task<(bool ok, AuthResponse? data, string code, string? message)> RegisterAsync(
-        string email, string password, string? userName, CancellationToken ct)
+    public async Task<(bool ok, AuthResponse? data, string code, string? message)> RegisterAsync(string email, string password, string? userName, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(email))
             return (false, null, Codes.EmailRequired, "Email is required.");
@@ -108,6 +107,8 @@ public class AuthService : IAuthService
         user.Roles.Add(new UserRole { User = user, Role = role });
         _db.Users.Add(user);
 
+        // SaveChangesAsync returns the number of affected rows, not the id.
+        // After saving, EF Core fills user.Id with the generated primary key.
         await _db.SaveChangesAsync(ct);
 
         var roles = new[] { role.Name ?? "User" };
@@ -123,6 +124,22 @@ public class AuthService : IAuthService
             .Where(e => e.UserId == user.Id)
             .Select(e => (int?)e.Id)
             .FirstOrDefaultAsync(ct);
+        if (employeeId is null)
+        {
+            var employee = new Employee
+            {
+                UserId = user.Id,
+                FirstName = user.UserName ?? user.Email!,
+                LastName = string.Empty,
+                Email = user.Email,
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.Employees.Add(employee);
+            await _db.SaveChangesAsync(ct);
+
+            // EF Core sets employee.Id to the generated primary key after saving.
+            employeeId = employee.Id;
+        }
 
         var (token, exp) = CreateJwt(user, roles, perms, employeeId);
         var resp = new AuthResponse(token, exp, user.Id, user.UserName, roles, perms, employeeId);
