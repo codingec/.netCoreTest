@@ -334,7 +334,7 @@ The CORS policy `AllowAngularApp` allows only `http://localhost:4200` (the Angul
 | `Persistence/DbInitializerHostedService.cs` | Calls `DatabaseBootstrapper.InitAsync` at startup |
 | `Persistence/DbInitializer.cs` | Older alternative that uses `EnsureCreatedAsync()` and seeds only the admin user. **Nothing calls it.** It is dead code. |
 | `Services/AuthService.cs` | Login, register, JWT creation |
-| `Services/BookingService.cs` | Booking CRUD, bookings by service, availability slots |
+| `Services/BookingService.cs` | Booking CRUD (create rejects overlapping times for the same service detail), bookings by service, availability slots |
 | `Services/OfficeService.cs` | Office CRUD |
 | `Services/ServiceService.cs` | Service CRUD. On update it **replaces** all service details (deletes the old ones and inserts new ones). |
 
@@ -502,7 +502,7 @@ Base URL (dev): `http://localhost:5170`. Every response has the shape `{ "code":
 | GET | `/api/Booking` | All bookings |
 | GET | `/api/Booking/{id}` | 404 if missing |
 | GET | `/api/Booking/Service?serviceId=1` | `BookingRow[]` with employee and detail names. 400 if `serviceId` is missing, 404 if empty |
-| POST | `/api/Booking` | `BookingUpsertDto` → 201 + `Location` header |
+| POST | `/api/Booking` | `BookingUpsertDto` → 201 + `Location` header. **409** `{ code: "ERR_BOOKING_CONFLICT", message: "This time is already booked. Please choose another time." }` if the same service detail already has a booking that overlaps the requested time (any employee) |
 | PUT | `/api/Booking/{id}` | 404 if missing |
 | DELETE | `/api/Booking/{id}` | 404 if missing |
 | POST | `/api/Booking/availability` | `{ id, date, frequency }` → `AvailabilityTimes[]` |
@@ -565,7 +565,7 @@ These are observations from reading the code, as a to-do list. Nothing here has 
 | 3 | Security | Login returns different codes for "user not found" and "wrong password" (`ERR_AUTH_USER_NOT_FOUND` vs `ERR_AUTH_INVALID_CREDENTIALS`), so callers can find out which emails are registered even though the message is the same. |
 | 4 | Robustness | `GetAvailability`: `int.Parse(dto.frequency)` / `DateTime.Parse(dto.date)` throw on bad input (500). `frequency = "0"` or a negative value creates an **infinite loop**, since `time` never advances. Validate that `frequency > 0`. |
 | 5 | Data | `schema.sql` foreign keys on `Service`, `Service_Details` and `Booking` have no `ON DELETE CASCADE`. Deleting an office, service or service detail that still has children will probably fail with a SQLite `FOREIGN KEY constraint failed` error (500). `ServicesService.UpdateAsync` also deletes and re-creates details, which fails the same way if a detail already has bookings. |
-| 6 | Data | `BookingService.CreateAsync` performs no checks: no overlap check, no `MaxBookingsPerWeek` / `BookingPerTime` / `MinMax` rules, and no `start < end` check. |
+| 6 | Data | `BookingService.CreateAsync` now rejects overlapping bookings of the same service detail (409, `ERR_BOOKING_CONFLICT`; ranges are half-open, so back-to-back bookings are allowed). Still missing: the same check in `UpdateAsync`, the `MaxBookingsPerWeek` / `BookingPerTime` / `MinMax` rules, and a `start < end` check. |
 | 7 | Deployment | `schema.sql` is located through the source folder, which breaks after publish (see 6.3). |
 | 8 | Bootstrapper | `await using (var conn = db.Database.GetDbConnection())` disposes the connection that **EF owns**. Normally you should open or close it but not dispose it, and let the DbContext manage it. |
 | 9 | Bootstrapper | `SplitSqlStatements` splits on `";\n"`, so a `;` inside a string literal, or two statements on one line, would break it. That is fine for the current file but fragile. |

@@ -160,15 +160,78 @@ public class BookingServiceTests : DatabaseTest
         Assert.Equal(Codes.NotFound, code);
     }
 
-    [Fact(Skip = KnownIssue.Prefix + "D1 — no overlap check; a second booking for the same resource and time is accepted.")]
+    private const string ConflictMessage = "This time is already booked. Please choose another time.";
+
+    [Fact]
     public async Task Create_rejects_overlapping_booking_for_same_resource()
     {
         await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.AdminEmployeeId, "10:00", "11:00"));
 
         await using var db = Database.CreateContext();
-        var (ok, _, _, _) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+        var before = await db.Bookings.CountAsync(b => b.ServiceDetailId == Seed.SmallRoomDetailId);
+        var (ok, id, code, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
 
         Assert.False(ok);
+        Assert.Equal(0, id);
+        Assert.Equal(Codes.BookingConflict, code);
+        Assert.Equal(ConflictMessage, message);
+
+        await using var check = Database.CreateContext();
+        Assert.Equal(before, await check.Bookings.CountAsync(b => b.ServiceDetailId == Seed.SmallRoomDetailId));
+    }
+
+    [Theory]
+    [InlineData("10:00", "11:00")] // same range
+    [InlineData("09:00", "12:00")] // covers the existing booking
+    [InlineData("10:15", "10:45")] // inside the existing booking
+    [InlineData("09:30", "10:30")] // overlaps its start
+    public async Task Create_rejects_any_overlap_for_same_resource(string start, string end)
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, code, _) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.AdminEmployeeId, start, end), default);
+
+        Assert.False(ok);
+        Assert.Equal(Codes.BookingConflict, code);
+    }
+
+    [Fact]
+    public async Task Create_rejects_overlap_by_the_same_employee()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, code, _) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+
+        Assert.False(ok);
+        Assert.Equal(Codes.BookingConflict, code);
+    }
+
+    [Theory]
+    [InlineData("11:00", "11:30")] // starts when the existing one ends
+    [InlineData("09:30", "10:00")] // ends when the existing one starts
+    public async Task Create_allows_back_to_back_bookings(string start, string end)
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.AdminEmployeeId, start, end), default);
+
+        Assert.True(ok, message);
+        Assert.True(id > 0);
+    }
+
+    [Fact]
+    public async Task Create_allows_same_time_on_a_different_resource()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"), default);
+
+        Assert.True(ok, message);
+        Assert.True(id > 0);
     }
 
     [Fact(Skip = KnownIssue.Prefix + "D4 — no validation that start is before end.")]

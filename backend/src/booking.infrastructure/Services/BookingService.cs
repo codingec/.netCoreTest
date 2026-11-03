@@ -72,6 +72,16 @@ public class BookingService : IBookingService
 
     public async Task<(bool ok, int id, string code, string? message)> CreateAsync(BookingUpsertDto dto, CancellationToken ct)
     {
+        var isTaken = await _db.Bookings
+            .AsNoTracking()
+            .AnyAsync(b =>
+                b.ServiceDetailId == dto.serviceDetailId &&
+                b.StartDatetime < dto.endDatetime &&
+                dto.startDatetime < b.EndDatetime, ct);
+
+        if (isTaken)
+            return (false, 0, Codes.BookingConflict, "This time is already booked. Please choose another time.");
+
         var s = new Booking
         {
             Id = dto.id,

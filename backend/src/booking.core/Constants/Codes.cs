@@ -13,4 +13,5 @@ public static class Codes
     public const string EmailRequired = "ERR_AUTH_EMAIL_REQUIRED";
     public const string PasswordWeak = "ERR_AUTH_PASSWORD_WEAK";
     public const string EmailAlreadyExists = "ERR_AUTH_EMAIL_EXISTS";
+    public const string BookingConflict = "ERR_BOOKING_CONFLICT";
 }

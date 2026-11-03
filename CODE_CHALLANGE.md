@@ -27,7 +27,12 @@ Backend: `dotnet test` (102 pass / 19 skipped today). Frontend: `npx ng test --w
 
 ## Tier 1 — Most likely (core business rules)
 
-### 1. Prevent double booking (overlap check) — `D1`
+### 1. Prevent double booking (overlap check) — `D1` ✅ implemented
+
+> Done in feature `specs/003-booking-overlap-check`: `CreateAsync` returns `Codes.BookingConflict`, the API
+> answers **409** `ERR_BOOKING_CONFLICT`, and the booking dialog shows the message. Still worth
+> discussing: the same check in `UpdateAsync`, race conditions, and a shared database across pods.
+
 - **Where:** `backend/src/booking.infrastructure/Services/BookingService.cs` → `CreateAsync`, `UpdateAsync`.
   Test: `BookingEndpointsTests` / infrastructure `BookingService` tests, skipped `D1`.
 - **Problem:** two bookings for the same `ServiceDetailId` and overlapping time are both accepted.

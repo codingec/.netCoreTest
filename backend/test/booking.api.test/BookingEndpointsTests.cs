@@ -62,6 +62,24 @@ public class BookingEndpointsTests : IClassFixture<BookingApiFactory>
     }
 
     [Fact]
+    public async Task Create_overlapping_booking_returns_409_with_code_and_message()
+    {
+        // Date used by no other test in this class (the database is shared per class).
+        await CreateBookingAsync(1, 102, "2031-04-07T10:00:00", "2031-04-07T11:00:00");
+
+        var res = await _client.PostAsJsonAsync("/api/booking", new
+        {
+            id = 0, serviceDetailId = 1, employeeId = 101,
+            startDatetime = "2031-04-07T10:30:00", endDatetime = "2031-04-07T11:30:00", createdAt = "2031-04-01T00:00:00",
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, res.StatusCode);
+        var body = await res.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("ERR_BOOKING_CONFLICT", body.GetProperty("code").GetString());
+        Assert.Equal("This time is already booked. Please choose another time.", body.GetProperty("message").GetString());
+    }
+
+    [Fact]
     public async Task Get_unknown_booking_returns_404()
     {
         Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync("/api/booking/9999")).StatusCode);

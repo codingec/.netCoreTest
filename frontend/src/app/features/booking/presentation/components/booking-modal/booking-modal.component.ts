@@ -25,6 +25,7 @@ import { MatOptionModule } from '@angular/material/core';
 import Booking from '../../../domain/models/booking.model';
 import { Subject } from 'rxjs/internal/Subject';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthStore } from '../../../../../core/state/auth.store';
 
 @Component({
@@ -45,6 +46,7 @@ import { AuthStore } from '../../../../../core/state/auth.store';
     MatSelectModule,
     MatOptionModule,
     MatProgressSpinner,
+    MatIconModule,
   ],
   providers: [provideNativeDateAdapter()],
 })
@@ -73,6 +75,8 @@ export class BookingModal {
     });
 
     this.form.valueChanges.subscribe((values) => {
+      // A server error (e.g. "already booked") no longer applies once the user changes the time.
+      this.errorMsg = null;
       if (values.startDate && values.startTime && values.duration) {
         this.updateEndDate(values.startDate, values.startTime, values.duration);
       }

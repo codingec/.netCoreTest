@@ -29,4 +29,43 @@ describe('BookingModalComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  const conflict = 'This time is already booked. Please choose another time.';
+  const errorBox = (): HTMLElement | null =>
+    fixture.nativeElement.querySelector('.modal-error[role="alert"]');
+
+  it('shows the error message inside the dialog', () => {
+    component.setError(conflict);
+    fixture.detectChanges();
+
+    expect(errorBox()?.textContent).toContain(conflict);
+  });
+
+  it('clears the error when the user changes the time', () => {
+    component.setError(conflict);
+    fixture.detectChanges();
+
+    component.form.patchValue({ startTime: '11:00' });
+    fixture.detectChanges();
+
+    expect(component.errorMsg).toBeNull();
+    expect(errorBox()).toBeNull();
+  });
+
+  it('clears the error when a new save starts', () => {
+    component.setError(conflict);
+
+    component.setLoading(true);
+
+    expect(component.errorMsg).toBeNull();
+  });
+
+  it('does not close the dialog when an error is set', () => {
+    dialogRefMock.close.calls.reset();
+
+    component.setError(conflict);
+    fixture.detectChanges();
+
+    expect(dialogRefMock.close).not.toHaveBeenCalled();
+  });
 });

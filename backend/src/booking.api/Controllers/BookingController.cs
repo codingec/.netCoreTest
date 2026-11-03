@@ -47,6 +47,7 @@ public class BookingController : ControllerBase
     public async Task<IActionResult> Create([FromBody] BookingUpsertDto body, CancellationToken ct)
     {
         var (ok, id, code, message) = await _svc.CreateAsync(body, ct);
+        if (!ok && code == Codes.BookingConflict) return Conflict(new { code, message });
         if (!ok) return BadRequest(new { code, message });
         return CreatedAtAction(nameof(GetById), new { id }, new { code = Codes.Ok, data = new { id } });
     }

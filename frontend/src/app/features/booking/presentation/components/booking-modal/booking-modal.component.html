@@ -41,6 +41,13 @@
     {{ form.get("endDate")?.value | date : "dd-MM-yyyy hh:mm a" }}
   </div>
 
+  @if (errorMsg) {
+    <div class="modal-error" role="alert">
+      <mat-icon aria-hidden="true">error</mat-icon>
+      <span>{{ errorMsg }}</span>
+    </div>
+  }
+
   <div class="modal-actions">
     <button
       mat-stroked-button
