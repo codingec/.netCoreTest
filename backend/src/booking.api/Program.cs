@@ -108,3 +108,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Exposes the compiler-generated Program class so integration tests can use WebApplicationFactory<Program>.
+public partial class Program { }

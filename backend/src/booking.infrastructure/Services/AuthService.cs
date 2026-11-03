@@ -105,8 +105,8 @@ public class AuthService : IAuthService
             _db.Roles.Add(role);
         }
 
+        user.Roles.Add(new UserRole { User = user, Role = role });
         _db.Users.Add(user);
-        _db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = defaultRoleId });
 
         await _db.SaveChangesAsync(ct);
 

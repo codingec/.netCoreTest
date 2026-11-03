@@ -29,9 +29,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpGet("Service")]
-    public async Task<IActionResult> GetByServiceId(
-        [FromQuery] int? serviceId,
-        CancellationToken ct)
+    public async Task<IActionResult> GetByServiceId([FromQuery] int? serviceId, CancellationToken ct)
     {
         if (!serviceId.HasValue)
             return BadRequest(new { code = Codes.NotFound, message = "serviceId is required." });
