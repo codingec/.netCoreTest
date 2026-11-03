@@ -1,0 +1,17 @@
+# Build context is backend/ (docker build -f deploy/docker/Dockerfile .)
+**/bin/
+**/obj/
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.user
+**/*.suo
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.log
+**/.env*
+test/
+deploy/
+*.md
+.git/

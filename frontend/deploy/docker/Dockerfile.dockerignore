@@ -1,0 +1,12 @@
+# Build context is frontend/ (docker build -f deploy/docker/Dockerfile .)
+node_modules/
+dist/
+.angular/
+coverage/
+deploy/kubernetes/
+.vscode/
+.idea/
+*.md
+*.log
+.env*
+.git/

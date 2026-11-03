@@ -1,0 +1,28 @@
+# Routes http://booking.local/api/... to the API. No path rewrite: controllers already
+# use the "api/[controller]" route. The frontend Ingress serves "/" on the same host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: booking-backend
+  labels:
+    app.kubernetes.io/name: booking-backend
+    app.kubernetes.io/component: api
+  annotations:
+    # Keep each user on the same pod: every pod has its own SQLite database.
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "booking-affinity"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/api"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: booking.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: booking-backend
+                port:
+                  name: http

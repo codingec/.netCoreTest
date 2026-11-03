@@ -1,0 +1,19 @@
+# Non-secret settings for the API, injected as environment variables (envFrom).
+# ASP.NET Core maps "__" to ":" (e.g. Jwt__Issuer -> Jwt:Issuer).
+# After changing values: kubectl -n booking rollout restart deploy/booking-backend
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-backend-config
+  labels:
+    app.kubernetes.io/name: booking-backend
+    app.kubernetes.io/component: api
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  # Per-pod SQLite file on the emptyDir volume mounted at /data (see deployment.yaml).
+  ConnectionStrings__DefaultConnection: "Data Source=/data/app.db"
+  Jwt__Issuer: booking
+  Jwt__Audience: booking_client
+  Cors__AllowedOrigins__0: http://booking.local
+  Logging__LogLevel__Default: Information
+  Logging__LogLevel__Microsoft.AspNetCore: Warning

@@ -1,0 +1,48 @@
+# NGINX server config for the web pods, mounted at /etc/nginx/conf.d/default.conf.
+# Keep "default.conf" identical to deploy/docker/nginx.conf (the copy baked into the image).
+# After changing values: kubectl -n booking rollout restart deploy/booking-frontend
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booking-frontend-config
+  labels:
+    app.kubernetes.io/name: booking-frontend
+    app.kubernetes.io/component: web
+data:
+  NGINX_ENTRYPOINT_QUIET_LOGS: "1"
+  default.conf: |
+    # Serves the built Angular app on port 8080 (non-root nginx).
+    # The same content is shipped in deploy/kubernetes/configmap.yaml (key default.conf).
+    server {
+        listen 8080;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        gzip on;
+        gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+        gzip_min_length 1024;
+
+        location = /healthz {
+            access_log off;
+            default_type text/plain;
+            return 200 "ok";
+        }
+
+        # index.html must never be cached, so new deployments are picked up.
+        location = /index.html {
+            add_header Cache-Control "no-cache";
+        }
+
+        # Hashed build assets can be cached for a long time.
+        location ~* \.(js|css|woff2?|ttf|png|jpg|jpeg|gif|svg|ico)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        # SPA fallback: unknown paths (deep links) return the app.
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }

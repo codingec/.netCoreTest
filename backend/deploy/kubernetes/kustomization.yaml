@@ -1,0 +1,25 @@
+# Apply with: kubectl apply -k backend/deploy/kubernetes
+# Create the secret first (see secret.example.yaml, intentionally not listed here).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: booking
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: booking-app
+    includeSelectors: false
+
+# Point at your registry/tag here, e.g. newName: registry.example.com/booking-backend
+images:
+  - name: booking-backend
+    newName: booking-backend
+    newTag: latest

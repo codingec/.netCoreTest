@@ -545,6 +545,15 @@ Jwt__Key=<secret> dotnet run --project src/booking.api
 
 ---
 
+### Running in Docker / Kubernetes
+
+- Container files live in `backend/deploy/` (see [`deploy/README.md`](deploy/README.md)).
+- `GET /healthz` returns `Healthy` (anonymous) and is used by the Docker and Kubernetes probes.
+- Allowed CORS origins come from `Cors:AllowedOrigins` (default `http://localhost:4200` in
+  `appsettings.json`; the cluster sets `Cors__AllowedOrigins__0`).
+- In the container the database is `/data/app.db` and `schema.sql` is copied to
+  `/app/booking.infrastructure/Persistence/Sql/` to match the path `DbInitializerHostedService` expects.
+
 ## 10. Known issues and things to watch
 
 These are observations from reading the code, as a to-do list. Nothing here has been changed.

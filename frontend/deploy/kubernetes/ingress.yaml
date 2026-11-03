@@ -1,0 +1,22 @@
+# Serves the web app at http://booking.local/. Requests to /api go to the backend
+# Ingress on the same host (longest prefix wins).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: booking-frontend
+  labels:
+    app.kubernetes.io/name: booking-frontend
+    app.kubernetes.io/component: web
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: booking.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: booking-frontend
+                port:
+                  name: http

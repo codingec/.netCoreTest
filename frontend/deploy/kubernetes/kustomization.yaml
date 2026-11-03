@@ -1,0 +1,24 @@
+# Apply with: kubectl apply -k frontend/deploy/kubernetes
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: booking
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: booking-app
+    includeSelectors: false
+
+# Point at your registry/tag here, e.g. newName: registry.example.com/booking-frontend
+images:
+  - name: booking-frontend
+    newName: booking-frontend
+    newTag: latest

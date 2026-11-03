@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-frontend
+  labels:
+    app.kubernetes.io/name: booking-frontend
+    app.kubernetes.io/component: web
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: booking-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

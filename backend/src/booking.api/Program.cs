@@ -11,17 +11,26 @@ using booking.infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Allowed browser origins come from configuration (Cors:AllowedOrigins), e.g. the
+// Kubernetes ConfigMap sets Cors__AllowedOrigins__0. Falls back to the Angular dev server.
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (allowedOrigins is null || allowedOrigins.Length == 0)
+    allowedOrigins = ["http://localhost:4200"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular app URL
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials(); // only if needed
         });
 });
+
+// Liveness/readiness endpoint for Docker and Kubernetes probes (built into ASP.NET Core).
+builder.Services.AddHealthChecks();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -106,6 +115,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/healthz").AllowAnonymous();
 
 app.Run();
 
