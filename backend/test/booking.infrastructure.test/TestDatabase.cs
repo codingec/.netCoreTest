@@ -66,6 +66,8 @@ public abstract class DatabaseTest : IAsyncLifetime
         public const int EquipmentServiceId = 2;       // has details, no bookings
         public const int SmallRoomDetailId = 1;
         public const int LargeRoomDetailId = 2;
+        public const int ProjectorDetailId = 3;
+        public const int LaptopDetailId = 4;
     }
 
     protected static class KnownIssue

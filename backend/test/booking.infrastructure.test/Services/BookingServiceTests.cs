@@ -202,10 +202,65 @@ public class BookingServiceTests : DatabaseTest
         await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
 
         await using var db = Database.CreateContext();
-        var (ok, _, code, _) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+        var (ok, _, code, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
 
         Assert.False(ok);
         Assert.Equal(Codes.BookingConflict, code);
+        Assert.Equal(ConflictMessage, message);
+    }
+
+    [Theory]
+    [InlineData("10:00", "11:00")] // same range
+    [InlineData("10:30", "11:30")] // partial overlap
+    public async Task Create_allows_same_employee_at_the_same_time_in_a_different_room(string start, string end)
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, start, end), default);
+
+        Assert.True(ok, message);
+        Assert.True(id > 0);
+    }
+
+    [Theory]
+    [InlineData(Seed.ProjectorDetailId)]
+    [InlineData(Seed.LaptopDetailId)]
+    public async Task Create_allows_other_employees_to_share_equipment_at_the_same_time(int detailId)
+    {
+        await CreateAsync(NewBooking(detailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(detailId, Seed.AdminEmployeeId, "10:00", "11:00"), default);
+
+        Assert.True(ok, message);
+        Assert.True(id > 0);
+    }
+
+    [Theory]
+    [InlineData(Seed.ProjectorDetailId)]
+    [InlineData(Seed.LaptopDetailId)]
+    public async Task Create_rejects_same_employee_repeating_equipment_at_the_same_time(int detailId)
+    {
+        await CreateAsync(NewBooking(detailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, code, message) = await new BookingService(db).CreateAsync(NewBooking(detailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+
+        Assert.False(ok);
+        Assert.Equal(Codes.BookingConflict, code);
+        Assert.Equal(ConflictMessage, message);
+    }
+
+    [Fact]
+    public async Task Create_allows_same_employee_back_to_back_in_a_different_room()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, "11:00", "12:00"), default);
+
+        Assert.True(ok, message);
     }
 
     [Theory]
@@ -223,15 +278,94 @@ public class BookingServiceTests : DatabaseTest
     }
 
     [Fact]
-    public async Task Create_allows_same_time_on_a_different_resource()
+    public async Task Create_allows_another_employee_at_the_same_time_on_a_different_resource()
     {
         await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
 
         await using var db = Database.CreateContext();
-        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"), default);
+        var (ok, id, _, message) = await new BookingService(db).CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.AdminEmployeeId, "10:00", "11:00"), default);
 
         Assert.True(ok, message);
         Assert.True(id > 0);
+    }
+
+    [Fact]
+    public async Task Create_allows_only_one_of_several_concurrent_requests_for_the_same_slot()
+    {
+        // The race window is small, so try many slots, each with requests released at the same moment.
+        const int rounds = 5, requests = 8;
+
+        for (var round = 0; round < rounds; round++)
+        {
+            var dto = NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00") with
+            {
+                startDatetime = Day.AddDays(round).AddHours(10),
+                endDatetime = Day.AddDays(round).AddHours(11),
+            };
+            using var start = new Barrier(requests);
+
+            var results = await Task.WhenAll(Enumerable.Range(0, requests).Select(_ => Task.Run(async () =>
+            {
+                await using var db = Database.CreateContext();
+                await db.Bookings.AnyAsync(); // open the connection before the requests are released
+                start.SignalAndWait();
+                return await new BookingService(db).CreateAsync(dto, default);
+            })));
+
+            Assert.Single(results, r => r.ok);
+            Assert.All(results.Where(r => !r.ok), r => Assert.Equal(Codes.BookingConflict, r.code));
+        }
+    }
+
+    [Fact]
+    public async Task Update_rejects_moving_onto_a_taken_room_and_keeps_the_booking()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+        var id = await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.AdminEmployeeId, "13:00", "14:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, code, message) = await new BookingService(db).UpdateAsync(id, NewBooking(Seed.SmallRoomDetailId, Seed.AdminEmployeeId, "10:30", "11:30"), default);
+
+        Assert.False(ok);
+        Assert.Equal(Codes.BookingConflict, code);
+        Assert.Equal(ConflictMessage, message);
+        await using var check = Database.CreateContext();
+        Assert.Equal(Day.AddHours(13), (await check.Bookings.SingleAsync(b => b.Id == id)).StartDatetime);
+    }
+
+    [Fact]
+    public async Task Update_allows_overlapping_the_same_employees_booking_in_a_different_room()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+        var id = await CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, "13:00", "14:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, message) = await new BookingService(db).UpdateAsync(id, NewBooking(Seed.LargeRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+
+        Assert.True(ok, message);
+    }
+
+    [Fact]
+    public async Task Update_allows_overlapping_its_own_previous_time()
+    {
+        var id = await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, message) = await new BookingService(db).UpdateAsync(id, NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:30", "11:30"), default);
+
+        Assert.True(ok, message);
+    }
+
+    [Fact]
+    public async Task Update_allows_moving_to_a_different_room_at_the_same_time()
+    {
+        await CreateAsync(NewBooking(Seed.SmallRoomDetailId, Seed.SarahEmployeeId, "10:00", "11:00"));
+        var id = await CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.AdminEmployeeId, "13:00", "14:00"));
+
+        await using var db = Database.CreateContext();
+        var (ok, _, message) = await new BookingService(db).UpdateAsync(id, NewBooking(Seed.LargeRoomDetailId, Seed.AdminEmployeeId, "10:00", "11:00"), default);
+
+        Assert.True(ok, message);
     }
 
     [Fact(Skip = KnownIssue.Prefix + "D4 — no validation that start is before end.")]
@@ -295,7 +429,7 @@ public class BookingServiceTests : DatabaseTest
         Assert.All(slots, s => Assert.True(s.isAvailable));
     }
 
-    [Fact(Skip = KnownIssue.Prefix + "D2 — only the slot start is tested, so a booking starting mid-slot (10:15) leaves the 10:00 slot 'available'.")]
+    [Fact]
     public async Task Availability_detects_partial_overlap_within_a_slot()
     {
         await CreateAsync(NewBooking(Seed.LargeRoomDetailId, Seed.AdminEmployeeId, "10:15", "10:45"));

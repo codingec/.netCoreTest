@@ -1,14 +1,16 @@
-using Microsoft.EntityFrameworkCore;
 using booking.core.Constants;
 using booking.core.DTOs;
 using booking.core.Models;
 using booking.infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using static booking.core.Constants.Permissions;
 
 namespace booking.infrastructure.Services;
 
 public interface IServicesService
 {
     Task<(bool ok, List<ServiceModel> data, string code)> GetAllAsync(CancellationToken ct);
+    Task<(bool ok, List<ServiceModel> data, string code)> GetByOfficeIdAsync(int officeId, CancellationToken ct);
     Task<(bool ok, ServiceModel? data, string code)> GetByIdAsync(int id, CancellationToken ct);
     Task<(bool ok, int id, string code, string? message)> CreateAsync(ServiceUpsertDto dto, CancellationToken ct);
     Task<(bool ok, string code, string? message)> UpdateAsync(int id, ServiceUpsertDto dto, CancellationToken ct);
@@ -29,6 +31,20 @@ public class ServicesService : IServicesService
             .Select(s => MapToModel(s))
             .ToListAsync(ct);
 
+        return (true, items, Codes.Ok);
+    }
+
+
+    public async Task<(bool ok, List<ServiceModel> data, string code)> GetByOfficeIdAsync(int officeId, CancellationToken ct)
+    {
+        var services = await _db.Services
+            .AsNoTracking()
+            .Include(s => s.ServiceDetails)
+            .Where(s => s.OfficeId == officeId)
+            .OrderBy(s => s.Id)
+            .ToListAsync(ct);
+
+        var items = services.Select(MapToModel).ToList();
         return (true, items, Codes.Ok);
     }
 

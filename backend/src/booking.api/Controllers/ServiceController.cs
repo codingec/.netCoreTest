@@ -14,9 +14,16 @@ public class ServicesController : ControllerBase
     public ServicesController(IServicesService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetAll([FromQuery] int? officeId, CancellationToken ct)
     {
-        var (ok, data, code) = await _svc.GetAllAsync(ct);
+        if (officeId is null)
+        {
+            var (_, all, allCode) = await _svc.GetAllAsync(ct);
+            return Ok(new { code = allCode, data = all });
+        }
+
+        var (ok, data, code) = await _svc.GetByOfficeIdAsync(officeId.Value, ct);
+        if (!ok || data is null) return NotFound(new { code = Codes.NotFound, message = "Services not found for the specified office." });
         return Ok(new { code, data });
     }
 

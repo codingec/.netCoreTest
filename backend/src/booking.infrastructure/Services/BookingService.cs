@@ -19,6 +19,12 @@ public interface IBookingService
 
 public class BookingService : IBookingService
 {
+    private const string RoomConflictMessage = "This time is already booked. Please choose another time.";
+
+    // Small Room and Large Room: only one employee at a time. Other items, like Projector (3) and
+    // Laptop (4), can be booked by several employees at once.
+    private static readonly int[] ExclusiveServiceDetailIds = [1, 2];
+
     private readonly AppDbContext _db;
     public BookingService(AppDbContext db) => _db = db;
 
@@ -43,9 +49,7 @@ public class BookingService : IBookingService
         return (true, MapToModel(s), Codes.Ok);
     }
 
-    public async Task<(bool ok, List<BookingRow> data, string code)> GetByServiceIdAsync(
-    int serviceId,
-    CancellationToken ct)
+    public async Task<(bool ok, List<BookingRow> data, string code)> GetByServiceIdAsync(int serviceId, CancellationToken ct)
     {
         var items = await _db.Bookings
             .AsNoTracking()
@@ -72,15 +76,11 @@ public class BookingService : IBookingService
 
     public async Task<(bool ok, int id, string code, string? message)> CreateAsync(BookingUpsertDto dto, CancellationToken ct)
     {
-        var isTaken = await _db.Bookings
-            .AsNoTracking()
-            .AnyAsync(b =>
-                b.ServiceDetailId == dto.serviceDetailId &&
-                b.StartDatetime < dto.endDatetime &&
-                dto.startDatetime < b.EndDatetime, ct);
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
 
-        if (isTaken)
-            return (false, 0, Codes.BookingConflict, "This time is already booked. Please choose another time.");
+        var conflict = await FindConflictAsync(dto, null, ct);
+        if (conflict is not null)
+            return (false, 0, Codes.BookingConflict, conflict);
 
         var s = new Booking
         {
@@ -94,13 +94,20 @@ public class BookingService : IBookingService
 
         _db.Bookings.Add(s);
         await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return (true, s.Id, Codes.Ok, null);
     }
 
     public async Task<(bool ok, string code, string? message)> UpdateAsync(int id, BookingUpsertDto dto, CancellationToken ct)
     {
+        await using var tx = await _db.Database.BeginTransactionAsync(ct);
+
         var s = await _db.Bookings.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (s is null) return (false, Codes.NotFound, "Booking not found.");
+
+        var conflict = await FindConflictAsync(dto, id, ct);
+        if (conflict is not null)
+            return (false, Codes.BookingConflict, conflict);
 
         s.ServiceDetailId = dto.serviceDetailId;
         s.EmployeeId = dto.employeeId;
@@ -109,6 +116,7 @@ public class BookingService : IBookingService
         s.CreatedAt = dto.createdAt;
 
         await _db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
         return (true, Codes.Ok, null);
     }
 
@@ -144,23 +152,36 @@ public class BookingService : IBookingService
             )
             .ToListAsync(ct);
 
-        for (var time = startTime; time < endTime; time = time.AddMinutes(int.Parse(dto.frequency)))
-        {
-            var isAvailable = true;
+        var frequency = int.Parse(dto.frequency);
 
-            foreach (var b in bookingsOnDate)
-            {
-                if (b.StartDatetime <= time && b.EndDatetime > time)
-                {
-                    isAvailable = false;
-                    break;
-                }
-            }
+        for (var time = startTime; time < endTime; time = time.AddMinutes(frequency))
+        {
+            var slotEnd = time.AddMinutes(frequency);
+            var isAvailable = !bookingsOnDate.Any(b => b.StartDatetime < slotEnd && time < b.EndDatetime);
 
             availabilityList.Add(new AvailabilityTimes(time.ToString("HH:mm"), isAvailable));
         }
 
         return (true, availabilityList, null);
+    }
+
+    private async Task<string?> FindConflictAsync(BookingUpsertDto dto, int? excludeBookingId, CancellationToken ct)
+    {
+        var overlapping = _db.Bookings
+            .AsNoTracking()
+            .Where(b =>
+                b.Id != excludeBookingId &&
+                b.StartDatetime < dto.endDatetime &&
+                dto.startDatetime < b.EndDatetime);
+
+        if (await overlapping.AnyAsync(b => b.EmployeeId == dto.employeeId && b.ServiceDetailId == dto.serviceDetailId, ct))
+            return RoomConflictMessage;
+
+        if (ExclusiveServiceDetailIds.Contains(dto.serviceDetailId) &&
+            await overlapping.AnyAsync(b => b.EmployeeId != dto.employeeId && b.ServiceDetailId == dto.serviceDetailId, ct))
+            return RoomConflictMessage;
+
+        return null;
     }
 
     private static BookingModel MapToModel(Booking s) =>
